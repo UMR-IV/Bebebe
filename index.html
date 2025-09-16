@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Audio Tracker with Images</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: url("Bebe.png") no-repeat center center fixed;
+      background-size: cover;
+      font-family: sans-serif;
+    }
+
+    /* Transparent card */
+    .card {
+      background: rgba(0, 0, 0, 0.5); /* 50% transparent */
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      color: white;
+      width: 80%;
+      max-width: 600px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    #tracker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 20px;
+      flex-wrap: nowrap;
+      padding: 5px 10px;
+    }
+
+    #tracker img {
+      height: 32px; /* emoji size */
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Bebebe</h2>
+    <input type="file" id="audioFile" accept="audio/*">
+    <br><br>
+    <audio id="audioPlayer" controls></audio>
+    <div id="tracker"></div>
+  </div>
+
+  <script>
+    const audioPlayer = document.getElementById("audioPlayer");
+    const audioFile = document.getElementById("audioFile");
+    const tracker = document.getElementById("tracker");
+
+    let audioCtx, analyser, source, dataArray;
+
+    audioFile.addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        audioPlayer.src = url;
+      }
+    });
+
+    audioPlayer.addEventListener("play", () => {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        source = audioCtx.createMediaElementSource(audioPlayer);
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+      }
+      animate();
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      analyser.getByteFrequencyData(dataArray);
+
+      // Average loudness
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+      let avg = sum / dataArray.length;
+
+      // Sensitivity boost (x2), capped shorter (max 25)
+      let bars = Math.min(25, Math.floor((avg * 2) / 10));
+
+      // Clear tracker
+      tracker.innerHTML = "";
+
+      // Add A
+      let imgA = document.createElement("img");
+      imgA.src = "https://cdn.discordapp.com/emojis/1400866081689702481.png";
+      tracker.appendChild(imgA);
+
+      // Add B repeated
+      for (let i = 0; i < bars; i++) {
+        let imgB = document.createElement("img");
+        imgB.src = "https://cdn.discordapp.com/emojis/1400866078770593985.png";
+        tracker.appendChild(imgB);
+      }
+
+      // Add C
+      let imgC = document.createElement("img");
+      imgC.src = "https://cdn.discordapp.com/emojis/1400866075888849039.png";
+      tracker.appendChild(imgC);
+    }
+  </script>
+</body>
+</html>
