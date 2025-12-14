@@ -93,7 +93,7 @@
       let avg = sum / dataArray.length;
 
       // Sensitivity boost (x2), capped shorter (max 25)
-      let bars = Math.min(25, Math.floor((avg * 2) / 10));
+      let bars = Math.min(25, Math.floor((avg * 2) / 20));
 
       // Clear tracker
       tracker.innerHTML = "";
@@ -118,3 +118,4 @@
   </script>
 </body>
 </html>
+
